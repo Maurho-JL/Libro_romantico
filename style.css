@@ -259,3 +259,7 @@ body {
     rgba(255, 255, 255, 0.015) 150px
   );
 }
+.controls,
+.controls button {
+  touch-action: manipulation;
+}

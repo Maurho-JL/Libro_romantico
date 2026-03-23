@@ -13,6 +13,7 @@ const pages = [
 
 let currentPage = 0;
 let isAnimating = false;
+let lastTap = 0;
 
 const page = document.getElementById("page");
 const pageImage = document.getElementById("pageImage");
@@ -21,6 +22,7 @@ const pageText = document.getElementById("pageText");
 const pageNumber = document.getElementById("pageNumber");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
+const controls = document.querySelector(".controls");
 
 function updateButtons() {
   prevBtn.disabled = currentPage === 0;
@@ -41,19 +43,21 @@ function animatePage(outClass, inClass, newIndex) {
   if (isAnimating) return;
   isAnimating = true;
 
+  page.classList.remove("go-next-out", "go-next-in", "go-prev-out", "go-prev-in");
   page.classList.add(outClass);
 
-  // Escuchar fin de animación de salida
-  page.addEventListener("animationend", function handleOut() {
+  page.addEventListener("animationend", function handleOut(e) {
+    if (e.target !== page) return;
     page.removeEventListener("animationend", handleOut);
+
     currentPage = newIndex;
     renderPage(currentPage);
 
     page.classList.remove(outClass);
     page.classList.add(inClass);
 
-    // Escuchar fin de animación de entrada
-    page.addEventListener("animationend", function handleIn() {
+    page.addEventListener("animationend", function handleIn(ev) {
+      if (ev.target !== page) return;
       page.removeEventListener("animationend", handleIn);
       page.classList.remove(inClass);
       isAnimating = false;
@@ -65,40 +69,61 @@ function changePage(direction) {
   if (direction === "next" && currentPage < pages.length - 1) {
     animatePage("go-next-out", "go-next-in", currentPage + 1);
   }
+
   if (direction === "prev" && currentPage > 0) {
     animatePage("go-prev-out", "go-prev-in", currentPage - 1);
   }
 }
 
-function addButtonEvents(btn, action) {
-  btn.addEventListener("click", action);
-  btn.addEventListener("touchstart", action, { passive: true });
-}
+/* CONTROLES */
+["click", "touchstart", "touchend"].forEach((eventName) => {
+  controls.addEventListener(
+    eventName,
+    (e) => {
+      e.stopPropagation();
+    },
+    { passive: true }
+  );
+});
 
-addButtonEvents(prevBtn, () => changePage("prev"));
-addButtonEvents(nextBtn, () => changePage("next"));
+prevBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  changePage("prev");
+});
 
+nextBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  changePage("next");
+});
 
-// Navegación con teclado
+/* TECLADO */
 document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight") changePage("next");
   if (e.key === "ArrowLeft") changePage("prev");
 });
 
-// Inicializar
 renderPage(currentPage);
 
-// --- EFECTOS VISUALES ---
-// Mensajes posibles
-const messages = ["Te quiero", "Lisa", "Te amo", "Me encantas", 
-  "Encantadora", "Me haces sonreir", "Divina!", "Una lindura","❤️","🤗","✨"];
+/* EFECTOS */
+const messages = [
+  "Te quiero",
+  "Lisa",
+  "Te amo",
+  "Me encantas",
+  "Encantadora",
+  "Me haces sonreír",
+  "Divina!",
+  "Una lindura",
+  "❤️",
+  "🤗",
+  "✨",
+];
 
-// Crear partículas
 function createParticles(x, y) {
   for (let i = 0; i < 18; i++) {
     const particle = document.createElement("span");
     particle.classList.add("particle");
-    particle.textContent = "♥︎𖹭"; // aquí el corazón
+    particle.textContent = "♥︎𖹭";
 
     const angle = Math.random() * Math.PI * 2;
     const distance = Math.random() * 120;
@@ -113,27 +138,25 @@ function createParticles(x, y) {
   }
 }
 
-
-// Mostrar mensaje
 function showMessage(x, y) {
   const message = document.createElement("span");
   message.classList.add("message");
   message.textContent = messages[Math.floor(Math.random() * messages.length)];
   message.style.left = x + "px";
   message.style.top = y + "px";
+
   document.body.appendChild(message);
   setTimeout(() => message.remove(), 1500);
 }
 
-// Combinar partículas + mensaje
 function handleClick(x, y) {
   createParticles(x, y);
   showMessage(x, y);
 }
 
-// Luces navideñas
 function createChristmasLights(x, y) {
   const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#ffffff"];
+
   for (let i = 0; i < 80; i++) {
     const particle = document.createElement("div");
     particle.classList.add("lightParticle");
@@ -152,47 +175,57 @@ function createChristmasLights(x, y) {
   }
 }
 
-// --- LISTENERS ---
-// Partículas y mensajes en cualquier clic
-document.addEventListener("click", (e) => handleClick(e.clientX, e.clientY));
-document.addEventListener("touchstart", (e) => {
-  const touch = e.touches[0];
-  handleClick(touch.clientX, touch.clientY);
+/* EVENTOS GLOBALES */
+document.addEventListener("click", (e) => {
+  if (e.target.closest(".controls")) return;
+  handleClick(e.clientX, e.clientY);
 });
 
-// Luces navideñas con doble clic/tap
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.target.closest(".controls")) return;
+    const touch = e.touches[0];
+    handleClick(touch.clientX, touch.clientY);
+  },
+  { passive: true }
+);
+
 document.addEventListener("dblclick", (e) => {
+  if (e.target.closest(".controls")) return;
   createChristmasLights(e.clientX, e.clientY);
   if (navigator.vibrate) navigator.vibrate(200);
 });
 
-let lastTap = 0;
-document.addEventListener("touchend", (e) => {
-  const currentTime = new Date().getTime();
-  const tapLength = currentTime - lastTap;
-  if (tapLength < 300 && tapLength > 0) {
-    const touch = e.changedTouches[0];
-    createChristmasLights(touch.clientX, touch.clientY);
-    if (navigator.vibrate) navigator.vibrate([100,50,100]);
-  }
-  lastTap = currentTime;
-  e.preventDefault();
-});
+document.addEventListener(
+  "touchend",
+  (e) => {
+    if (e.target.closest(".controls")) return;
+
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTap;
+
+    if (tapLength < 300 && tapLength > 0) {
+      const touch = e.changedTouches[0];
+      createChristmasLights(touch.clientX, touch.clientY);
+      if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    }
+
+    lastTap = currentTime;
+  },
+  { passive: true }
+);
 
 function createHeart() {
   const heart = document.createElement("span");
   heart.classList.add("heart");
   heart.textContent = "♡︎";
 
-  // posición inicial aleatoria en el ancho de la pantalla
   heart.style.left = Math.random() * window.innerWidth + "px";
-  heart.style.top = window.innerHeight + "px"; // empieza abajo
+  heart.style.top = window.innerHeight + "px";
 
   document.body.appendChild(heart);
-
-  // remover después de la animación
   setTimeout(() => heart.remove(), 4000);
 }
 
-// lanzar corazones cada cierto tiempo
 setInterval(createHeart, 800);
