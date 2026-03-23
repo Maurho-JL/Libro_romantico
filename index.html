@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Libro Virtual</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="photo-bg"></div>
+  <div class="overlay-bg"></div>
+  <div class="stripes-bg"></div>
+
+  <!-- aquí va tu libro -->
+</body>
+<body>
+  <main class="app">
+    <section class="book-shell">
+      <div class="page-stage">
+        <article class="book-page fade-in" id="page">
+          <div class="page-top">
+            <span class="page-counter" id="pageNumber">1 / 10</span>
+          </div>
+
+          <div class="image-frame">
+            <img id="pageImage" src="img/foto1.jpg" alt="Recuerdo especial" />
+          </div>
+
+          <div class="page-text">
+            <h1 id="pageTitle">Mi detalle para ti</h1>
+            <p id="pageText">
+              Cada momento contigo se vuelve un recuerdo bonito.
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div class="controls">
+        <button id="prevBtn" type="button">Anterior</button>
+        <button id="nextBtn" type="button">Siguiente </button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
