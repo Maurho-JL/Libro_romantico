@@ -70,8 +70,14 @@ function changePage(direction) {
   }
 }
 
-prevBtn.addEventListener("click", () => changePage("prev"));
-nextBtn.addEventListener("click", () => changePage("next"));
+function addButtonEvents(btn, action) {
+  btn.addEventListener("click", action);
+  btn.addEventListener("touchstart", action, { passive: true });
+}
+
+addButtonEvents(prevBtn, () => changePage("prev"));
+addButtonEvents(nextBtn, () => changePage("next"));
+
 
 // Navegación con teclado
 document.addEventListener("keydown", (e) => {
